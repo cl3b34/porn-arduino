@@ -15,9 +15,9 @@
 /* Define Plants, this list is just to remember yourself what is what.
 plant0 is an  Espada de sao jorge  Start: 800, stop 775, water amount: 3000
 plant1 is an  Jukka                Start: 800, stop 775, water amount: 3000
-plant2 is an  tamarindeiro        Start: 800, stop 775, water amount: 3000
-plant3 is an  Lemoeiro grande      Start: 800, stop 775, water amount: 3000
-plant4 is an  Lemoeiro pequeno     Start: 800, stop 775, water amount: 3000
+plant2 is an  tamarindeiro        Start: 425, stop 400, water amount: 3000
+plant3 is an  Limoeiro grande      Start: 450, stop 425, water amount: 3000
+plant4 is an  Abacaxi grande     Start: 450, stop 425, water amount: 3000
 
 solenoid - sensor
 2 - 8
@@ -25,6 +25,9 @@ solenoid - sensor
 4 - 10
 5 - 11
 6 - 12
+
+20180308 - Espada de sao jorge leaves are getting yellow? Diminish total amount of humidity. Give 5s of water at a time to plants in big pots
+
 
 */
  
@@ -40,17 +43,17 @@ solenoid - sensor
 //Define how many measurement one takes average of, and wait time between each sample
 #define averageMeasuringsensor 10 // How many samples
 #define averageWaittimesensor 300 // Wait time between each sample
-#define globalWaittime 1000000 // Wait time after checked all plants and watered every plant. 1000000 = 16 minutes
+#define globalWaittime 8000000 // Wait time after checked all plants and watered every plant. 4000000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
 
 //Plants setup
 #define numberOfPlants 5 // Enter how many plants you have  
 
 int sensorPower[numberOfPlants] = {8,9,10,11,12}; // each sensor is controlled individually. Probably will change this later to be a single power signasl
-int StartwateringPlant[numberOfPlants] = {800,800,800,800,800}; // Add a new value for each plant, this is when it starts watering
-int StopwateringPlant[numberOfPlants] = {775,775,775,775,775}; // Add a new value for each plant, this is when it stop watering.
+int StartwateringPlant[numberOfPlants] = {1000,850,525,550,550}; // Add a new value for each plant, this is when it starts watering
+int StopwateringPlant[numberOfPlants] = {975,825,500,525,525}; // Add a new value for each plant, this is when it stop watering.
 int SensorpinPlant[numberOfPlants] = {A8,A9,A10,A11,A12}; // Analoge pin, Add a new value for each plant
 int SolenoidoutputPlant[numberOfPlants] = {2,3,4,5,6}; // Digital pin, Add a new value for each plant.
-int WateringtimePlant[numberOfPlants] = {3000,3000,3000,3000,3000}; // Divide by 1000 and get seconds. Add a new value for each  plant.
+int WateringtimePlant[numberOfPlants] = {30000,8000,15000,2000,2000}; // Divide by 1000 and get seconds. Add a new value for each  plant.
 
 //Setup ends here
  

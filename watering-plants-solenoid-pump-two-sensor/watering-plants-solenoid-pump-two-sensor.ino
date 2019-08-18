@@ -1,5 +1,5 @@
  /*
- Automatic water with solenoid valves.
+ Automatic plant watering with solenoid valves and pump.
  This goes to one plant at the time.
  So it works like this: Reads a plant moisture, if its below StartwateringPlant moisture it will set a flag that this plant is dry, and then it will water for the WateringtimePlant period.
  Then it stops watering and goes on to the next plant i line an does the same, when its finished with the last plant the program waits globalWaittime before going further.
@@ -10,14 +10,6 @@
  Also it will print the value of the soil moisture, and if its watering is turned on on serial 9600 baud. 0 means its not watering and 1 is that is watering.
 
  Use defined output pin to power measurement sensor to maximize moisture measuement sensor life so its turned off when not in use.
-*/
- 
-/* Define Plants, this list is just to remember yourself what is what.
-plant0 is an  abacaxi pequeno  Start: 800, stop 775, water amount: 3000
-plant1 is an  Espada de Sao Jorge Start: 800, stop 775, water amount: 3000
-plant2 is an  tamarindeiro        Start: 425, stop 400, water amount: 3000
-plant3 is an  Limoeiro grande      Start: 450, stop 425, water amount: 3000
-plant4 is an  Abacaxi grande     Start: 450, stop 425, water amount: 3000
 
 solenoid - sensor
 2 - 8
@@ -28,7 +20,6 @@ solenoid - sensor
 
 20190813 - Gave some plants away, got new plants
 20180308 - Espada de sao jorge leaves are getting yellow? Diminish total amount of humidity. Give 5s of water at a time to plants in big pots
-
 
 */
  
@@ -49,71 +40,71 @@ solenoid - sensor
 //Plants setup
 #define numberOfPlants 5 // Enter how many plants you have  
 
+// Add a value to each array when adding a new plant
+String plants[numberOfPlants] = {"Abacaxi Pequeno", "Espada de Sao Jorge", "Tamarindeiro", "Limoeiro Grande", "Abacaxi Grande"}; 
 int sensorPower[numberOfPlants] = {8,9,10,11,12}; // each sensor is controlled individually. Probably will change this later to be a single power signasl
-int StartwateringPlant[numberOfPlants] = {550,1000,525,550,550}; // Add a new value for each plant, this is when it starts watering
-int StopwateringPlant[numberOfPlants] = {525,925,500,525,525}; // Add a new value for each plant, this is when it stop watering.
-int SensorpinPlant[numberOfPlants] = {A8,A9,A10,A11,A12}; // Analoge pin, Add a new value for each plant
-int SolenoidoutputPlant[numberOfPlants] = {2,3,4,5,6}; // Digital pin, Add a new value for each plant.
-int WateringtimePlant[numberOfPlants] = {2000,30000,15000,2000,2000}; // Divide by 1000 and get seconds. Add a new value for each  plant.
+int StartwateringPlant[numberOfPlants] = {550,1000,525,550,550}; // When to start watering
+int StopwateringPlant[numberOfPlants] = {525,925,500,525,525}; // When to stop watering
+int SensorpinPlant[numberOfPlants] = {A8,A9,A10,A11,A12}; // Analoge pin where each sensor is read
+int SolenoidoutputPlant[numberOfPlants] = {2,3,4,5,6}; // Digital pin, power to the solenoid
+int WateringtimePlant[numberOfPlants] = {2000,30000,15000,2000,2000}; // How long to water a plant for. Divide by 1000 and get seconds
 
 //Setup ends here
  
 //the value read from each moisture sensor
-int moisturePlant[numberOfPlants] = {0}; // Value to store average reading in
+int moisturePlant[numberOfPlants] = {0}; // Store average of the sensor readings
  
-//the sum of the 30 times sampling
-long int moistureSumPlant[numberOfPlants] = {0}; // This variable is used to store the sum of all sampled value
- 
+//the sum of all the samples we got on the moisture sensor
+long int moistureSumPlant[numberOfPlants] = {0}; 
+
 boolean keepWateringPlant[numberOfPlants] = {false};
 
 int howmanyPlants = numberOfPlants - 1;
+
+int globalWaitMinutes = globalWaittime/1000/60;
  
 void setup() {
   Serial.begin(9600);
   for(int x = 0; x <= howmanyPlants; x++)
     {
+      Serial.println("Initializing plant " + plants[x]);
       pinMode(SolenoidoutputPlant[x], OUTPUT);  // Makes the outputs to the solenoids
       // Make sure the solenoids are closed
-      Serial.println("turning solenoid OFF");
+      Serial.println("turning solenoid for " + plants[x] + " OFF");
       digitalWrite(SolenoidoutputPlant[x], HIGH);
-      Serial.println("Setting Sensors to output");
+      Serial.println("Setting Sensor to output");
       pinMode(sensorPower[x], OUTPUT); 
     }
  
  // pinMode(led, OUTPUT);
  // pinMode(sensorMeasurementpoweron, OUTPUT);
+  Serial.println("Initializing output and turning pump OFF");
   pinMode(pumpPowerOn, OUTPUT);
-  // make sure pump is off
-  Serial.println("turning pump OFF");
   digitalWrite(pumpPowerOn, HIGH);
-
 }
  
 void loop() {
-
   // Turn the sensors on
-        Serial.println("Turning Sensors ON");
+  Serial.println("Turning Sensors ON");
   for(int PlanteLoop = 0; PlanteLoop <= howmanyPlants; PlanteLoop++)
   {
+    Serial.println("Sensor for " + plants[PlanteLoop] + " ON");
     digitalWrite(sensorPower[PlanteLoop], HIGH); 
   }
    delay(3000);
 
   for(int PlanteLoop = 0; PlanteLoop <= howmanyPlants; PlanteLoop++)
   {
-    Serial.print("moisturePlant ");
-      Serial.println(moisturePlant[PlanteLoop]);
-      Serial.print("StopWateringPlant ");
-      Serial.println(StopwateringPlant[PlanteLoop]);
-            Serial.print("StartWateringPlant ");
-      Serial.println(StartwateringPlant[PlanteLoop]);
-    moistureSamplingPlant(PlanteLoop);
-    if (moisturePlant[PlanteLoop] > StartwateringPlant[PlanteLoop]){
-      Serial.println("moisture is low, watering");
-      keepWateringPlant[PlanteLoop] = true; // Turn on watering plant
-    }
+      Serial.println("moisturePlant " + plants[PlanteLoop] + " " + moisturePlant[PlanteLoop] );
+      Serial.println("StopWateringPlant " + plants[PlanteLoop] + " " + StopwateringPlant[PlanteLoop] );
+      Serial.println("StartWateringPlant " + plants[PlanteLoop] + " " + StartwateringPlant[PlanteLoop] );
+      moistureSamplingPlant(PlanteLoop);
+      if (moisturePlant[PlanteLoop] > StartwateringPlant[PlanteLoop]){
+       Serial.println("moisture in " + plants[PlanteLoop] + " is low, watering");
+       keepWateringPlant[PlanteLoop] = true; // Turn on watering plant
+     }
     if (moisturePlant[PlanteLoop] < StopwateringPlant[PlanteLoop]) {
-      Serial.println("Plant is wet, STOP watering");
+      Serial.println("moisture in " + plants[PlanteLoop] + " is high, STOP watering");
       keepWateringPlant[PlanteLoop] = false; // Turn off watering on plant
    //   digitalWrite(pumpPowerOn, HIGH);
       digitalWrite(SolenoidoutputPlant[PlanteLoop], HIGH);
@@ -122,12 +113,12 @@ void loop() {
     if (keepWateringPlant[PlanteLoop] == true) {
       Serial.println("turning pump ON");
       digitalWrite(pumpPowerOn, LOW); // turn pump on
-      Serial.println("moisture is low, watering");
-      Serial.println("turning solenoid ON");
+      Serial.println("moisture in " + plants[PlanteLoop] + " is low, watering");
+      Serial.println("turning solenoid in " + plants[PlanteLoop] + " ON");
       digitalWrite(SolenoidoutputPlant[PlanteLoop], LOW); // Open valve
       delay(WateringtimePlant[PlanteLoop]); // How long it will water
-      Serial.println("turning solenoid OFF");
-      digitalWrite(SolenoidoutputPlant[PlanteLoop], HIGH);  // turn pump and solenoid off
+      Serial.println("turning solenoid in " + plants[PlanteLoop] + " OFF");
+      digitalWrite(SolenoidoutputPlant[PlanteLoop], HIGH);  // turn solenoid off, will leave the pump on until the end of the cycle
      // digitalWrite(pumpPowerOn, HIGH);
     }
   }
@@ -141,7 +132,7 @@ void loop() {
   // Turn pump off
   Serial.println("turning pump OFF");
   digitalWrite(pumpPowerOn, HIGH);
-  Serial.println("Global wait");
+//  Serial.println("Waiting for " + globalWaitMinutes + " minutes");
   delay(globalWaittime);
 }
  
@@ -156,17 +147,12 @@ void moistureSamplingPlant(int PlantNr) //Read value of plant moisture
   }
 //  digitalWrite(sensorMeasurementpoweron, LOW); // Turn off power to measurement probes
   moisturePlant[PlantNr] = moistureSumPlant[PlantNr] / averageMeasuringsensor; //Divide to get correct reading
-  Serial.print("Plant ");
-  Serial.print(PlantNr);
-  Serial.print(" of ");
-  Serial.print(howmanyPlants);
-  Serial.print(" have an moisture of " );
-  Serial.print(moisturePlant[PlantNr]);
-  Serial.print(". Plant watering status is ");
+ // Serial.println("Plant " + PlantNr + " of " + howmanyPlants + " is a " + plants[PlantNr] + " and have an moisture of " + moisturePlant[PlantNr]);
+ Serial.println("Plant " + plants[PlantNr] + " have an moisture of " + moisturePlant[PlantNr]);
   if(keepWateringPlant[PlantNr] == true){
-   Serial.print("Dry");
+   Serial.print("It is Dry");
   }else{
-    Serial.print("Wet");
+    Serial.print("It is Wet");
   }
  // Serial.print(keepWateringPlant[PlantNr]);
   Serial.println();

@@ -149,11 +149,11 @@ void moistureSamplingPlant(int PlantNr) //Read value of plant moisture
   moisturePlant[PlantNr] = moistureSumPlant[PlantNr] / averageMeasuringsensor; //Divide to get correct reading
  // Serial.println("Plant " + PlantNr + " of " + howmanyPlants + " is a " + plants[PlantNr] + " and have an moisture of " + moisturePlant[PlantNr]);
  Serial.println("Plant " + plants[PlantNr] + " have an moisture of " + moisturePlant[PlantNr]);
-  if(keepWateringPlant[PlantNr] == true){
-   Serial.print("It is Dry");
-  }else{
-    Serial.print("It is Wet");
-  }
+  //if(keepWateringPlant[PlantNr] == true){
+  // Serial.print("It is Dry");
+ // }else{
+  //  Serial.print("It is Wet");
+ // }
  // Serial.print(keepWateringPlant[PlantNr]);
   Serial.println();
   moistureSumPlant[PlantNr] = 0; // Reset counting variable

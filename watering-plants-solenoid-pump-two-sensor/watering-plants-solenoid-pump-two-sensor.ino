@@ -41,15 +41,14 @@ solenoid - sensor
 // Add a value to each array when adding a new plant
 String plants[numberOfPlants] = {"Abacaxi Pequeno", "Espada de Sao Jorge", "Tamarindeiro", "Limoeiro Grande", "Abacaxi Grande"}; 
 int sensorPower[numberOfPlants] = {8,9,10,11,12}; // each sensor is controlled individually. Probably will change this later to be a single power signasl
-int StartwateringPlant[numberOfPlants] = {550,1000,525,550,550}; // When to start watering
-int StopwateringPlant[numberOfPlants] = {525,925,500,525,525}; // When to stop watering
+int StartwateringPlant[numberOfPlants] = {700,1000,525,550,700}; // When to start watering
+int StopwateringPlant[numberOfPlants] = {675,925,500,525,675}; // When to stop watering
 int SensorpinPlant[numberOfPlants] = {A8,A9,A10,A11,A12}; // Analoge pin where each sensor is read
 int SolenoidoutputPlant[numberOfPlants] = {2,3,4,5,6}; // Digital pin, power to the solenoid
 int WateringtimePlant[numberOfPlants] = {2000,30000,15000,2000,2000}; // How long to water a plant for. Divide by 1000 and get seconds
 
 //Setup ends here
  
-//the value read from each moisture sensor
 // Store average of the sensor readings
 int moisturePlant[numberOfPlants] = {0}; 
  

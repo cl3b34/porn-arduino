@@ -1,0 +1,257 @@
+Arduino regador de plantas
+
+Watering code:
+
+https://github.com/oleost/WaterSystemArduino/blob/master/moisturewatering/moisturewatering.ino
+
+Solenoid:
+http://www.instructables.com/id/Controling-a-solenoid-valve-with-an-Arduino/
+
+
+====
+Sensor
+
+
+Analog input
+
+Dry: 1023
+In water: entre 350 e 463
+
+em terra bem humida: 300 a 400
+em terra meio humida: 530
+
+
+Inverted the arduino sensor order
+Minus on the board to the left connector on the sensor
+Plus to the right
+
+Dry: 1023
+In water: 430
+
+Wet ground: 293 to 495
+medium Dry Ground: 884
+
+Sparsed powering up on digital out
+
+dry: 975
+in water: 471 - 479
+
+wet ground: 300 - 400
+medium dry ground: 
+
+
+
+
+=====
+
+// Code snipets improvements
+
+switch
+
+// Reset all LEDs
+digitalWrite(led1, LOW);
+digitalWrite(led2, LOW);
+digitalWrite(led3, LOW);
+digitalWrite(led4, LOW);
+digitalWrite(led5, LOW);
+
+switch(sensorValue) {
+case >= 820:
+digitalWrite(led5, HIGH);
+// normally we'd put "break;" here to exit the select
+case >= 615:
+
+digitalWrite(led4, HIGH);
+case >= 410:
+digitalWrite(led3, HIGH);
+case >= 250:
+digitalWrite(led2, HIGH);
+case >= 0:
+digitalWrite(led1, HIGH);
+}
+
+
+
+/// not using 'delay'
+
+/By Dave Soderbloom
+//Quick sketch for water sensor reading without delay to tie up processor for other tasks like interrupts 
+//pins I used on msp432
+
+int led1 = 2;
+
+int led2 = 3;
+
+int led3 = 4;
+
+int led4 = 5;
+
+int led5 = 6;
+
+int probe = 8;
+
+int moistureSensor = A7; 
+
+
+
+int sensorValue = 0;
+
+long previousMillis = 0;
+
+long interval = 10000; // 15 minutes900000
+
+
+
+void setup()
+{
+
+
+Serial.begin(9600);
+
+// setting the led pins to outputs
+
+pinMode(led1, OUTPUT);
+
+pinMode(led2, OUTPUT);
+
+pinMode(led3, OUTPUT);
+
+pinMode(led4, OUTPUT);
+
+pinMode(led5, OUTPUT);
+
+pinMode(probe, OUTPUT);
+
+//get and display startup reading before main loop to the serial monitor
+digitalWrite(probe, HIGH);
+delay(1000);
+int sensorValue = analogRead(moistureSensor);
+Serial.println(sensorValue);
+digitalWrite(probe, LOW);
+
+
+
+
+}
+
+void loop()
+{
+
+
+unsigned long currentMillis = millis();
+
+int sensorValue = analogRead(moistureSensor);
+
+if(currentMillis - previousMillis > interval)
+{
+previousMillis = currentMillis;
+
+
+digitalWrite(probe, HIGH);
+delay(2); //super small delay may need to be higher depending on your arduino or launchpad board you are using some take 200 miliseconds to get accurate analog reading
+
+
+
+int sensorValue = analogRead(moistureSensor);
+
+
+// print out the value you read:
+Serial.println(sensorValue);
+
+//may have to adjust ranges depending on a few factors 
+if (sensorValue >= 820)
+
+{
+
+digitalWrite(led1, HIGH);
+
+digitalWrite(led2, HIGH);
+
+digitalWrite(led3, HIGH);
+
+digitalWrite(led4, HIGH);
+
+digitalWrite(led5, HIGH);
+
+}
+
+else if (sensorValue >= 615 && sensorValue < 820)
+
+{
+
+digitalWrite(led1, HIGH);
+
+digitalWrite(led2, HIGH);
+
+digitalWrite(led3, HIGH);
+
+digitalWrite(led4, HIGH);
+
+digitalWrite(led5, LOW);
+
+}
+
+else if (sensorValue >= 410 && sensorValue < 615)
+
+{
+
+digitalWrite(led1, HIGH);
+
+digitalWrite(led2, HIGH);
+
+digitalWrite(led3, HIGH);
+
+digitalWrite(led4, LOW);
+
+digitalWrite(led5, LOW);
+
+}
+
+else if (sensorValue >= 250 && sensorValue < 410)
+
+{
+
+digitalWrite(led1, HIGH);
+
+digitalWrite(led2, HIGH);
+
+digitalWrite(led3, LOW);
+
+digitalWrite(led4, LOW);
+
+digitalWrite(led5, LOW);
+
+}
+
+else if (sensorValue >= 0 && sensorValue < 250)
+
+{
+
+digitalWrite(led1, HIGH);
+
+digitalWrite(led2, LOW);
+
+digitalWrite(led3, LOW);
+
+digitalWrite(led4, LOW);
+
+digitalWrite(led5, LOW);
+
+}
+
+// Power-down the probe
+
+digitalWrite(probe, LOW);
+}
+}
+
+
+
+======================
+REFERENCES
+https://maker.pro/projects/arduino/arduino-soil-moisture-sensor/
+http://www.instructables.com/id/Controling-a-solenoid-valve-with-an-Arduino/
+http://www.instructables.com/id/Control-peristaltic-pump-with-TA7291P-and-an-Ardui/
+https://learn.sparkfun.com/tutorials/esp8266-wifi-shield-hookup-guide
+https://learn.sparkfun.com/tutorials/esp8266-thing-development-board-hookup-guide
+

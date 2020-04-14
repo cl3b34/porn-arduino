@@ -31,7 +31,7 @@ int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 21, 22, 23, 24};
 */
 //int startWatering[] = {550, 1000, 525, 550, 550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
 //int stopWatering[] = {525, 925, 500, 525, 525, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200}; // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-//int wateringTime[] = {2000, 30000, 15000, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                        // How long to water for ( ms )
+//int wateringTime[] = {5000, 30000, 15000, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                        // How long to water for ( ms )
 
 int startWatering[] = {550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
 int stopWatering[] = {525, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200}; // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
@@ -70,22 +70,29 @@ void loop() {
   // Check the moisture
   for(byte i = 0; i < (sizeof(moistureSensorPin) / sizeof(moistureSensorPin[0])); i++) 
   {
-    // The moisture number is counter intuitive. A big number indicates dry ground
-    Serial.print("Sampling moisture from sensor ");
-    Serial.print(i, DEC);
-    Serial.println();
-    int moistureAveraged = sampleMoisture(i);
-    Serial.print("Sampled moisture avg on " + plant[i] + " is: ");
-    Serial.print(moistureAveraged);
-    Serial.println();
-    if (moistureAveraged > startWatering[i]){
-      Serial.println("Moisture is low in " + plant[i] + " needs watering");
-      // Set a flag for this plant, we will water all at the same time later
-      shouldWater[i] = true; 
-    }else if (moistureAveraged < stopWatering[i]) {
-      Serial.println("Moisture is high in " + plant[i] + " do NOT need watering");
-      // remove the flag
-      shouldWater[i] = false; 
+    if( plant[i] != "" && wateringTime[i] > 0){
+      // The moisture number is counter intuitive. A big number indicates dry ground
+      Serial.print("Sampling moisture from sensor ");
+      Serial.print(i, DEC);
+      Serial.println(", " + plant[i]);
+      int moistureAveraged = sampleMoisture(i);
+      Serial.print("Sampled moisture avg on " + plant[i] + " is: ");
+      Serial.print(moistureAveraged);
+      Serial.println();
+      if (moistureAveraged > startWatering[i]){
+        Serial.println("Moisture is low in " + plant[i] + " needs watering");
+        // Set a flag for this plant, we will water all at the same time later
+        shouldWater[i] = true; 
+      }else if (moistureAveraged < stopWatering[i]) {
+        Serial.println("Moisture is high in " + plant[i] + " do NOT need watering");
+        // remove the flag
+        shouldWater[i] = false; 
+      }
+    }else{
+      Serial.print("No plant installed on sensor ");
+      Serial.print(i, DEC);
+      Serial.println(" . Skipping.");
+      shouldWater[i] = false;
     }
   }
   
@@ -93,7 +100,7 @@ void loop() {
   for(byte i = 0; i < (sizeof(shouldWater) / sizeof(shouldWater[0])); i++) 
   {
     if (shouldWater[i] == true) {
-      Serial.println("Watering plant " + plant[i] + " needs watering");
+      Serial.println("Watering " + plant[i]);
       digitalWrite(solenoidPowerPin[i], relayON);           // First open valve
       digitalWrite(pumpPowerPin, relayON);                  // Then turn pump on
       delay(wateringTime[i]);                               // Water for the defined period
@@ -108,9 +115,6 @@ void loop() {
   int sleepTimeInMin = sleepTime/1000/60; 
   Serial.print( "Global wait (minutes): ");
   Serial.print(sleepTimeInMin, DEC);
-  Serial.println();
-  Serial.print("Sleep time (ms): ");
-  Serial.print(sleepTime);
   Serial.println();
   
   delay(sleepTime);

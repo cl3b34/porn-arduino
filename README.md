@@ -35,4 +35,12 @@ Pump
 	
 
 Diodes
-	Diodes should be connected with their negative side on the positive side of the load
+	Diodes should be connected with their negative side on the positive side of the load, if they are to block current.
+	
+	Diodes are identified by five or six digit codes.
+	“1” specifies the number of PN junctions.
+	N means semiconductor
+	And remaining three or four digits indicate specific features of the diode
+	In 40xx, where xx could be 00, 01 and so on. They are rated at average rectified forward current of 1 amp with peak repetitive reverse voltage rating from 50V to 1000V depending on xx number.
+	1N4007 is rated at forward current of of 1A with peak reverse voltage rating of 1000V.
+

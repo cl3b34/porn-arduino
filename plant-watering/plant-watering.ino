@@ -7,8 +7,8 @@
 const int relayON = LOW;                  //  Our relay activates when it gets a LOW signal from arduino
 const int relayOFF = HIGH;                //  Our relay activates when it gets a LOW signal from arduino
 const int pumpPowerPin = 2;
-const int moistureSensorsPowerPin = 25;    // all moisture sensors are powered from the same pin
-const int waterLevelSensorPowerPin = 26; 
+const int moistureSensorsPowerPin = 26;    // all moisture sensors are powered from the same pin
+const int waterLevelSensorPowerPin = 27; 
 const int waterLevelSensorPin = A15;
 const int samplesToTake = 30;             // Take a few sample measurements and average them for better precision
 const int timeBetweenSamples =  300;
@@ -21,7 +21,7 @@ const long sleepTime = 8000000;            // Time between runs to check if plan
 // String plant[] = {"Abacaxi Pequeno", "Espada de Sao Jorge", "Tamarindeiro", "Limoeiro Grande", "Maracuja", "", "", "", "", "", "", "", "", "", ""}; 
 String plant[] = {"Maracuja", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}; 
 int moistureSensorPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14};  // Analog Pins where the moisture sensors are connected
-int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 21, 22, 23, 24};            // Digital pin providing power to the solenoids in the plant
+int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 22, 23, 24, 25};            // Digital pin providing power to the solenoids in the plant
 
 /* 
    Moisture level to start and stop watering.
@@ -35,7 +35,7 @@ int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 21, 22, 23, 24};
 
 int startWatering[] = {550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
 int stopWatering[] = {525, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200}; // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-int wateringTime[] = {4000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                        // How long to water for ( ms )
+int wateringTime[] = {10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                        // How long to water for ( ms )
 
 // Flags to identify which plants need water
 boolean shouldWater[15] = {false};
@@ -52,12 +52,12 @@ void setup() {
   }
   
   pinMode(moistureSensorsPowerPin, OUTPUT); 
-  digitalWrite(moistureSensorsPowerPin, relayOFF);        // moisture sensor OFF
+  digitalWrite(moistureSensorsPowerPin, LOW);        // moisture sensor OFF
   pinMode(pumpPowerPin, OUTPUT); 
   digitalWrite(pumpPowerPin, relayOFF);                // Pump Off
 
   pinMode(waterLevelSensorPowerPin, OUTPUT); 
-  digitalWrite(waterLevelSensorPowerPin, relayOFF);    // water level sensor OFF
+  digitalWrite(waterLevelSensorPowerPin, LOW);    // water level sensor OFF
 
 
 }

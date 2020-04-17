@@ -18,8 +18,7 @@ const long sleepTime = 8000000;            // Time between runs to check if plan
   The plant we are caring for, If the plant doesn't have a name, we will not look after her, so give her a name!
   The order is important since they match the moisture sensors and solenoids installed in the plant
 */
-// String plant[] = {"Abacaxi Pequeno", "Espada de Sao Jorge", "Tamarindeiro", "Limoeiro Grande", "Maracuja", "", "", "", "", "", "", "", "", "", ""}; 
-String plant[] = {"Maracuja", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}; 
+String plant[] = {"Maracuja", "Limoeiro", "Tamarindeiro", "Espada de Sao Jorge", "", "", "", "", "", "", "", "", "", "", ""}; 
 int moistureSensorPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14};  // Analog Pins where the moisture sensors are connected
 int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 22, 23, 24, 25};            // Digital pin providing power to the solenoids in the plant
 
@@ -29,13 +28,9 @@ int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 22, 23, 24, 25};
    When defining a new plant, put a proper value here. 
    plant that like it wet should hover close to 500, dry should remain close to 1000 
 */
-//int startWatering[] = {550, 1000, 525, 550, 550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-//int stopWatering[] = {525, 925, 500, 525, 525, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200}; // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-//int wateringTime[] = {5000, 30000, 15000, 2000, 2000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                        // How long to water for ( ms )
-
-int startWatering[] = {550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-int stopWatering[] = {525, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200}; // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-int wateringTime[] = {10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                        // How long to water for ( ms )
+int startWatering[] = {550, 550, 525, 1000, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
+int stopWatering[] = {525, 525, 500, 925, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200}; // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
+int wateringTime[] = {15000, 8000, 15000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                        // How long to water for ( ms )
 
 // Flags to identify which plants need water
 boolean shouldWater[15] = {false};
@@ -61,7 +56,19 @@ void setup() {
 
 
 }
- 
+
+ /*
+  * TODO: Protection logic. Track for how long water has been given to the plants and if the moisture level remains low send some alert?
+  * - Could be a leaking hose
+  * - Could be a broken sensor
+  * 
+  * TODO: Connect a PT100 sensor outside. only add the plants outside to the watering protocol if the temperature is above 5C
+  * 
+  * TODO: Connect a water level sensor to the water reservoir
+  * 
+  * TODO: Connect a LCD screen to show the watering status: Last plants watered and measured moisture level.
+  *       Bonus: Temperature inside and outside, uptime
+  */
 void loop() {
   // Turn sensors on and give them some time to stablilize
   digitalWrite(moistureSensorsPowerPin, HIGH); 
@@ -95,6 +102,9 @@ void loop() {
       shouldWater[i] = false;
     }
   }
+
+  // Don't need the sensors anymore, turn them OFF
+  digitalWrite(moistureSensorsPowerPin, LOW);               // Moisture sensor off
   
   // Do the watering
   for(byte i = 0; i < (sizeof(shouldWater) / sizeof(shouldWater[0])); i++) 
@@ -108,9 +118,8 @@ void loop() {
     }
   }
 
-  // Finally turn everything off before sleeping until next cycle
+  // Finally turn the pump off before sleeping until next cycle
   digitalWrite(pumpPowerPin, relayOFF);                     // Pump off
-  digitalWrite(moistureSensorsPowerPin, LOW);               // Moisture sensor off
 
   int sleepTimeInMin = sleepTime/1000/60; 
   Serial.print( "Global wait (minutes): ");

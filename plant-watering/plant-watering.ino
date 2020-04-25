@@ -12,7 +12,8 @@ const int pumpPowerPin = 2;
 const int moistureSensorsPowerPin = 26;    // all moisture sensors are powered from the same pin
 const int waterLevelSensorPowerPin = 27; 
 const int waterLevelSensorPin = A15;
-const int samplesToTake = 5;             // Take a few sample measurements and average them for better precision
+//const int samplesToTake = 30;             // Take a few sample measurements and average them for better precision
+const int samplesToTake = 5;
 const int timeBetweenSamples =  300;
 long previousTime = 0;                   // The last time we run
 const long sleepTime = 8000000;            // Time between runs to check if plant need water. 4000000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
@@ -33,9 +34,11 @@ int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 22, 23, 24, 25};
    When defining a new plant, put a proper value here. 
    plant that like it wet should hover close to 500, dry should remain close to 1000 
 */
+//int startWatering[] = {575, 550, 525, 800, 550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
 int startWatering[] = {251, 550, 525, 800, 550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
 int stopWatering[] = {550, 525, 500, 775, 525, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-int wateringTime[] = {5000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
+//int wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
+int wateringTime[] = {1000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
 int sensorSafetyUpperLimit = 850;  // Any measurement above this is considered a faulty sensor, broken or disconnected
 int sensorSafetyLowerLimit = 250;  // Any measurement bellow this is considered a faulty sensor, broken or disconnected
 int sensorSafetyShorted = 1; // A reading of 1 means the sensor is shorted
@@ -170,8 +173,10 @@ void loop() {
   Serial.println(timeLeft);
   lcd.clear();
 //  lcd.setCursor(0,0);
-  lcd.print("Minutes to next run: " );
+  lcd.print("Next run: " );
   lcd.print(timeLeft);
+  lcd.print("m");
+
   delay(5000);
   if(hasError != ""){
     lcdWrite(hasError);
@@ -197,7 +202,10 @@ int sampleMoisture(int moistureSensor)
   // A 2 lines LCD writes on line 0 and 2
   // A 4 lines will write on lines 0, 2, 1 and finally 3
   lcd.clear();
-  if(text.length() > lcdCols){
+  byte lines = text.length()/lcdCols;
+//  Serial.println(lines);
+  byte screens = lines/lcdRows;
+  if(lines>0){
     char buffer[text.length()+1];
     text.toCharArray(buffer, text.length()+1);
     for(byte i=0; i<lcdCols; i++){

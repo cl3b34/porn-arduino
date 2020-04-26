@@ -201,22 +201,58 @@ int sampleMoisture(int moistureSensor)
  void lcdWrite(String text){
   // A 2 lines LCD writes on line 0 and 2
   // A 4 lines will write on lines 0, 2, 1 and finally 3
+  int lcdLines[lcdRows];
+  if(lcdRows == 2){
+    lcdLines[0] = 0;
+    lcdLines[1] = 2;
+  } else if(lcdRows == 4){
+    for(byte i=0; i<4; i++){
+      lcdLines[i]=i;
+    }
+  }   
+//  Serial.print("Rows in this LCD ");
+//  Serial.println(sizeof(lcdLines)/sizeof(lcdLines[0]));
+
   lcd.clear();
-  byte lines = text.length()/lcdCols;
-//  Serial.println(lines);
-  byte screens = lines/lcdRows;
-  if(lines>0){
+  Serial.print("Text size to print ");
+  Serial.println(text.length());
+  if(text.length() > lcdCols){
+    Serial.println("longer than a line");
     char buffer[text.length()+1];
     text.toCharArray(buffer, text.length()+1);
-    for(byte i=0; i<lcdCols; i++){
+    for(byte i=0; i<text.length(); i++){
+//      Serial.print("calculating remainder of ");
+//      Serial.print( i+1);
+//      Serial.print(" and " );
+//      Serial.println(lcdCols * lcdRows+1);
+//      Serial.print("Remainder screen " );
+//      Serial.println((i+1) % ((lcdCols * lcdRows)+1));
+      if( (i+1) % ((lcdCols * lcdRows)+1) != 0){  // the screen is not full yet
+        for(byte p = 0; p< lcdRows; p++){  //control the line we will print on
+//          Serial.print("Remainder line of ");
+//          Serial.print( i+1);
+//          Serial.print(" and ");
+//          Serial.println(lcdCols+1);
+//          Serial.println( (i+1) % (lcdCols+1) );
+          if( (i+1) % (lcdCols+1)  != 0  ){  // the line is not full yet
+            lcd.print(buffer[i]); 
+            break;
+          }else{
+            Serial.print("Move to next line: ");
+            Serial.println(lcdLines[p]);
+            lcd.setCursor(0,lcdLines[p++]);  // move to next line
+            lcd.print(buffer[i]);
+            break;
+          }
+        } 
+      }else{  // move to next 'page'
+        Serial.println("Move to next screen");
+        delay(2000);
+        lcd.clear();
         lcd.print(buffer[i]);
       }
-      lcd.setCursor(0,2);
-    for(byte x=lcdCols; x<text.length(); x++){
-      lcd.print(buffer[x]);
-//      Serial.print(buffer[x]);
-    }
-    }else{
-      lcd.print(text);
-    }  
+   }   
+  }else{
+    lcd.print(text);
+  }  
 }

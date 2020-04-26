@@ -210,43 +210,29 @@ int sampleMoisture(int moistureSensor)
       lcdLines[i]=i;
     }
   }   
-//  Serial.print("Rows in this LCD ");
-//  Serial.println(sizeof(lcdLines)/sizeof(lcdLines[0]));
 
   lcd.clear();
-  Serial.print("Text size to print ");
-  Serial.println(text.length());
   if(text.length() > lcdCols){
-    Serial.println("longer than a line");
     char buffer[text.length()+1];
     text.toCharArray(buffer, text.length()+1);
+    byte lin = 0;
     for(byte i=0; i<text.length(); i++){
-//      Serial.print("calculating remainder of ");
-//      Serial.print( i+1);
-//      Serial.print(" and " );
-//      Serial.println(lcdCols * lcdRows+1);
-//      Serial.print("Remainder screen " );
-//      Serial.println((i+1) % ((lcdCols * lcdRows)+1));
       if( (i+1) % ((lcdCols * lcdRows)+1) != 0){  // the screen is not full yet
-        for(byte p = 0; p< lcdRows; p++){  //control the line we will print on
-//          Serial.print("Remainder line of ");
-//          Serial.print( i+1);
-//          Serial.print(" and ");
-//          Serial.println(lcdCols+1);
-//          Serial.println( (i+1) % (lcdCols+1) );
           if( (i+1) % (lcdCols+1)  != 0  ){  // the line is not full yet
             lcd.print(buffer[i]); 
-            break;
           }else{
-            Serial.print("Move to next line: ");
-            Serial.println(lcdLines[p]);
-            lcd.setCursor(0,lcdLines[p++]);  // move to next line
-            lcd.print(buffer[i]);
-            break;
+            Serial.print("Moving to next line: ");
+            if(lin < sizeof(lcdLines)/sizeof(lcdLines[0])){
+              lin += 1;              
+            }else{
+              // back to first line
+              lin = 0;
+            }
+              lcd.setCursor(0,lcdLines[lin]);  // move to next line
+              lcd.print(buffer[i]);
           }
-        } 
       }else{  // move to next 'page'
-        Serial.println("Move to next screen");
+        Serial.println("Moving to next page");
         delay(2000);
         lcd.clear();
         lcd.print(buffer[i]);

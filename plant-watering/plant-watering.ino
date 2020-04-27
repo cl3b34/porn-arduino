@@ -35,12 +35,12 @@ int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 22, 23, 24, 25};
    plant that like it wet should hover close to 500, dry should remain close to 1000 
 */
 //int startWatering[] = {575, 550, 525, 800, 550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-int startWatering[] = {251, 550, 525, 800, 550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
+int startWatering[] = {249, 550, 525, 800, 550, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
 int stopWatering[] = {550, 525, 500, 775, 525, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
 //int wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
 int wateringTime[] = {1000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
 int sensorSafetyUpperLimit = 850;  // Any measurement above this is considered a faulty sensor, broken or disconnected
-int sensorSafetyLowerLimit = 250;  // Any measurement bellow this is considered a faulty sensor, broken or disconnected
+int sensorSafetyLowerLimit = 550;  // Any measurement bellow this is considered a faulty sensor, broken or disconnected
 int sensorSafetyShorted = 1; // A reading of 1 means the sensor is shorted
 // Flags to identify which plants need water
 boolean shouldWater[15] = {false};
@@ -109,7 +109,7 @@ void loop() {
           isBroken[i] = true;
           shouldWater[i] = false; 
           Serial.println("Sensor on " + plant[i] +  " gave a reading out of range (" + moistureAveraged + "), please check if it is broken");
-          hasError = "Error: ";
+          hasError = "Error:";
         }
   
         if (moistureAveraged > startWatering[i] && ! isBroken[i]){
@@ -148,15 +148,7 @@ void loop() {
         lastWatered += " ";
       }
     }
-
-    // Collect the errors for displaying
-    for(byte i = 0; i < (sizeof(isBroken) / sizeof(isBroken[0])); i++) 
-    {
-      if (isBroken[i] == true) {
-        hasError += plant[i] + "sensor gave a strange reading";
-      }
-    }
-  
+ 
     // Turn the pump off before sleeping until next cycle
     digitalWrite(pumpPowerPin, relayOFF);   
     // Save the time of the last run
@@ -172,15 +164,22 @@ void loop() {
   Serial.print("Minutes to next run: ");
   Serial.println(timeLeft);
   lcd.clear();
-//  lcd.setCursor(0,0);
   lcd.print("Next run: " );
   lcd.print(timeLeft);
   lcd.print("m");
-
   delay(5000);
+
+  // Collect the errors for displaying
+  for(byte i = 0; i < (sizeof(isBroken) / sizeof(isBroken[0])); i++) 
+  {
+    if (isBroken[i] == true) {
+      hasError += " " + plant[i];
+    }
+  }
   if(hasError != ""){
+    hasError += " gave an strange value";
     lcdWrite(hasError);
-    delay(20000);
+//      delay(20000);
   }
 }
 
@@ -210,6 +209,8 @@ int sampleMoisture(int moistureSensor)
       lcdLines[i]=i;
     }
   }   
+ Serial.print("Text size to print ");
+ Serial.println(text.length());
 
   lcd.clear();
   if(text.length() > lcdCols){
@@ -217,25 +218,53 @@ int sampleMoisture(int moistureSensor)
     text.toCharArray(buffer, text.length()+1);
     byte lin = 0;
     for(byte i=0; i<text.length(); i++){
+//      Serial.print("calculating remainder of ");
+//      Serial.print( i+1);
+//      Serial.print(" and " );
+//      Serial.println((lcdCols * lcdRows)+1);
+      Serial.print("Remainder screen " );
+      Serial.println((i+1) % ((lcdCols * lcdRows)+1));
+
       if( (i+1) % ((lcdCols * lcdRows)+1) != 0){  // the screen is not full yet
           if( (i+1) % (lcdCols+1)  != 0  ){  // the line is not full yet
+//            Serial.print("Remainder line of ");
+//            Serial.print( i+1);
+//            Serial.print(" and ");
+//            Serial.println(lcdCols+1);
+              Serial.print("Remainder line " );
+              Serial.println( (i+1) % (lcdCols+1) );
             lcd.print(buffer[i]); 
+            Serial.print(buffer[i]);
+            delay(100);
           }else{
-            Serial.print("Moving to next line: ");
-            if(lin < sizeof(lcdLines)/sizeof(lcdLines[0])){
+            int lines = (sizeof(lcdLines)/sizeof(lcdLines[0]))-1;
+            Serial.print("lines " );
+            Serial.println(lines);
+            if(lin < (sizeof(lcdLines)/sizeof(lcdLines[0]))-1){
               lin += 1;              
             }else{
-              // back to first line
-              lin = 0;
+              lin = 0; // back to first line
             }
-              lcd.setCursor(0,lcdLines[lin]);  // move to next line
-              lcd.print(buffer[i]);
-          }
+            Serial.print("line variable ");
+            Serial.println(lin);
+            Serial.print("Moving to next line: ");
+            Serial.println(lcdLines[lin]); 
+            for(byte x=0; x<sizeof(lcdLines)/sizeof(lcdLines[0]); x++){
+              Serial.print("contents of lcdLines ");
+              Serial.println(lcdLines[x]);
+            }
+            lcd.setCursor(0,lcdLines[lin]);  // move cursor to next line
+            lcd.print(buffer[i]); 
+            Serial.print(buffer[i]);
+            delay(100);
+        }
       }else{  // move to next 'page'
         Serial.println("Moving to next page");
         delay(2000);
         lcd.clear();
         lcd.print(buffer[i]);
+        Serial.print(buffer[i]);
+        delay(100);
       }
    }   
   }else{

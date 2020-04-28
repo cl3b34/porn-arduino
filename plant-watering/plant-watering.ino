@@ -230,10 +230,8 @@ void showStatus() {
     if (isBroken[i] == true) {
       if (hasError == "") {
         hasError += "Error, these sensors gave an strange reading:";
-        hasError += " " + plant[i];
-      } else {
-        hasError += " " + plant[i];
-      }
+      } 
+      hasError += " " + plant[i];
       isBroken[i] = false;
     }
   }
@@ -247,11 +245,13 @@ void showStatus() {
 /*
    Do the actual watering on the plants
 */
-void doWatering() {
-  lastWatered = "Last Watered: ";
+void doWatering() {  
   for (byte i = 0; i < (sizeof(shouldWater) / sizeof(shouldWater[0])); i++)
   {
     if (shouldWater[i] == true) {
+      if (lastWatered == "") {
+        lastWatered = "Last Watered: ";
+      }
       DPRINTLN("Watering " + plant[i] + " for " + wateringTime[i] / 1000 + "s");
       lcdWrite("Watering " + plant[i] + " for " + wateringTime[i] / 1000 + "s");
       digitalWrite(solenoidPowerPin[i], relayON);           // First open valve

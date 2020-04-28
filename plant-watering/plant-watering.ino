@@ -221,7 +221,6 @@ void loop() {
   if(hasError != ""){
     lcdWrite(hasError);
   }
-//    delay(20000);
 }
 
 
@@ -237,6 +236,7 @@ int sampleMoisture(int moistureSensor)
   // Return the average of the readings 
   return moistureSampleSum / samplesToTake;
 }
+
 
 /*
  * Handles changes of line and pagination for different sizes of LCD Screens 
@@ -283,9 +283,11 @@ void lcdWrite(String text){
 //            DPRINT(buffer[i]);
             delay(100);
           }else{
-            int lines = (sizeof(lcdLines)/sizeof(lcdLines[0]))-1;
-            DPRINT("lines " );
-            DPRINTLN(lines);
+              // We are at the last character on the line, let's print and move to the next line
+              lcd.print(buffer[i]); 
+//            int lines = (sizeof(lcdLines)/sizeof(lcdLines[0]))-1;
+//            DPRINT("lines " );
+//            DPRINTLN(lines);
             if(lin < (sizeof(lcdLines)/sizeof(lcdLines[0]))-1){
               DPRINTLN("adding to lin ");
               lin += 1;              
@@ -293,10 +295,10 @@ void lcdWrite(String text){
               DPRINTLN("rolling lin back to zero ");
               lin = 0; // back to first line
             }
-            DPRINT("lin variable ");
-            DPRINTLN(lin);
-            DPRINT("Moving to next line: ");
-            DPRINTLN(lcdLines[lin]); 
+//            DPRINT("lin variable ");
+//            DPRINTLN(lin);
+//            DPRINT("Moving to next line: ");
+//            DPRINTLN(lcdLines[lin]); 
 //            for(byte x=0; x<sizeof(lcdLines)/sizeof(lcdLines[0]); x++){
 //              DPRINT("contents of lcdLines ");
 //              DPRINTLN(lcdLines[x]);
@@ -304,19 +306,16 @@ void lcdWrite(String text){
             DPRINT("Moving cursor to next line ");
             DPRINTLN(lcdLines[lin]);
             lcd.setCursor(0,lcdLines[lin]);         // move cursor to next line
-            lcd.print(buffer[i]); 
-            DPRINT(buffer[i]);
             delay(100);
         }
-      }else{  // move to next 'page'
+      }else{  // we are at the last character of the page, print it a and move to next page
+        lcd.print(buffer[i]);
         DPRINTLN("Moving to next page");
         delay(2000);
         lcd.clear();
         DPRINTLN("Cursor moved to line zero");
         lin = 0;
         DPRINTLN("rolling lin back to zero ");
-        lcd.print(buffer[i]);
-        DPRINT(buffer[i]);
         delay(100);
       }
    }   

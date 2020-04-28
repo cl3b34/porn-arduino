@@ -152,7 +152,6 @@ void loop() {
           DPRINTLN("Moisture is low in " + plant[i] + " needs watering");
           // Set a flag for this plant, we will water all at the same time later
           shouldWater[i] = true;
-          lastWatered = "Last Watered: ";
         } else if (moistureAveraged < stopWatering[i]) {
           DPRINTLN("Moisture is high in " + plant[i] + " do NOT need watering");
           // remove the flag
@@ -249,6 +248,7 @@ void showStatus() {
    Do the actual watering on the plants
 */
 void doWatering() {
+  lastWatered = "Last Watered: ";
   for (byte i = 0; i < (sizeof(shouldWater) / sizeof(shouldWater[0])); i++)
   {
     if (shouldWater[i] == true) {
@@ -261,6 +261,7 @@ void doWatering() {
       DPRINTLN("adding " + plant[i] + " to last watered list");
       lastWatered += plant[i];
       lastWatered += " ";
+      shouldWater[i] = false;
     }
   }
 

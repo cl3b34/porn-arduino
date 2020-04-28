@@ -7,7 +7,8 @@
 #include <LiquidCrystal.h>
 
 // Scaffolding for debug
-#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+//#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+
 #ifdef DEBUG    //Macros are usually in all capital letters.
   #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
   #define DPRINTLN(...)  Serial.println(__VA_ARGS__)   
@@ -29,12 +30,12 @@ const int waterLevelSensorPowerPin = 27;
 const int waterLevelSensorPin = A15;
 long previousTime = 0;                   // The last time we run
 const long sleepTime = 8000000;            // Time between runs to check if plant need water. 4000000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
-#ifdef DEBUG 
+#ifdef DEBUG // Development rig
   const int samplesToTake = 5;             
   const int timeBetweenSamples =  100;
   const int lcdRows = 4;
   const int lcdCols = 20;
-#else  // Development rig
+#else  
   const int samplesToTake = 30;             // Take a few sample measurements and average them for better precision
   const int timeBetweenSamples =  300;
   const int lcdRows = 2;
@@ -55,16 +56,16 @@ int solenoidPowerPin[] = {3, 4, 5 ,6 ,7 ,8 ,9 ,10 , 11, 12, 13, 22, 23, 24, 25};
    When defining a new plant, put a proper value here. 
    plant that like it wet should hover close to 500, dry should remain close to 1000 
 */
-#ifdef DEBUG 
+#ifdef DEBUG  // Development
   int startWatering[] = {100, 600, 600, 800, 600, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
   int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};      
   int wateringTime[] = {3000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // water for just enough time so we can inspect
   int sensorSafetyUpperLimit = 850;  
   int sensorSafetyLowerLimit = 400;  // force at least one plant sensor to be 'defective'
   int sensorSafetyShorted = 1; 
-#else  // Development
-  int startWatering[] = {625, 600, 600, 800, 600, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-  int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering  Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
+#else  
+  int startWatering[] = {625, 600, 600, 800, 675, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
+  int stopWatering[] = {600, 575, 575, 775, 655, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
   int wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
   int sensorSafetyUpperLimit = 850;  // Any measurement above this is considered a faulty sensor, broken or disconnected
   int sensorSafetyLowerLimit = 250;  // Any measurement bellow this is considered a faulty sensor, broken or disconnected

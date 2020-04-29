@@ -6,21 +6,21 @@
 
 #include <LiquidCrystal.h>
 
-/* 
- *  Scaffolding for debug
- */
- 
-//#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+/*
+    Scaffolding for debug
+*/
+
+#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
 
 #ifdef DEBUG    //Macros are usually in all capital letters.
-  #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
-  #define DPRINTLN(...)  Serial.println(__VA_ARGS__)
-  #define DELAY(...)    delay(__VA_ARGS__)
+#define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
+#define DPRINTLN(...)  Serial.println(__VA_ARGS__)
+#define DELAY(...)    delay(__VA_ARGS__)
 
 #else
-  #define DPRINT(...)     //now defines a blank line
-  #define DPRINTLN(...)
-  #define DELAY(...)
+#define DPRINT(...)     //now defines a blank line
+#define DPRINTLN(...)
+#define DELAY(...)
 #endif
 
 const int relayON = LOW;                  //  Our relay activates when it gets a LOW signal from arduino
@@ -31,18 +31,16 @@ const int waterLevelSensorPowerPin = 27;
 const int waterLevelSensorPin = A15;
 
 #ifdef DEBUG // Development rig
-  const int samplesToTake = 5;
-  const unsigned long timeBetweenSamples =  100;
-  const int lcdRows = 4;
-  const int lcdCols = 20;
+const int samplesToTake = 5;
+const unsigned long timeBetweenSamples =  100;
+const int lcdRows = 4;
+const int lcdCols = 20;
 #else
-  const int samplesToTake = 30;             // Take a few sample measurements and average them for better precision
-  const unsigned long timeBetweenSamples =  300;
-  const int lcdRows = 2;
-  const int lcdCols = 16;
+const int samplesToTake = 30;             // Take a few sample measurements and average them for better precision
+const unsigned long timeBetweenSamples =  300;
+const int lcdRows = 2;
+const int lcdCols = 16;
 #endif
-
-const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4000000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
 
 
 /*
@@ -60,19 +58,21 @@ int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24,
    plant that like it wet should hover close to 500, dry should remain close to 800
 */
 #ifdef DEBUG  // Development
-  int startWatering[] = {100, 600, 600, 800, 600, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
-  int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-  unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // water for just enough time so we can inspect ( UL = unsigned long )
-  int sensorSafetyUpperLimit = 850;
-  int sensorSafetyLowerLimit = 400;  // force at least one plant sensor to be 'defective'
-  int sensorSafetyShorted = 1;
+const unsigned long sleepTime = 120000;
+int startWatering[] = {100, 600, 600, 800, 100, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
+int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
+unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // water for just enough time so we can inspect ( UL = unsigned long )
+int sensorSafetyUpperLimit = 850;
+int sensorSafetyLowerLimit = 250;  // force at least one plant sensor to be 'defective'
+int sensorSafetyShorted = 1;
 #else
-  int startWatering[] = {625, 600, 600, 800, 675, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-  int stopWatering[] = {600, 575, 575, 775, 655, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-  unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
-  int sensorSafetyUpperLimit = 850;  // Any measurement above this is considered a faulty sensor, broken or disconnected
-  int sensorSafetyLowerLimit = 250;  // Any measurement bellow this is considered a faulty sensor, broken or disconnected
-  int sensorSafetyShorted = 1; // A reading of 1 means the sensor is shorted
+const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4.000.000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
+int startWatering[] = {625, 600, 600, 800, 675, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
+int stopWatering[] = {600, 575, 575, 775, 655, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
+unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
+int sensorSafetyUpperLimit = 850;  // Any measurement above this is considered a faulty sensor, broken or disconnected
+int sensorSafetyLowerLimit = 250;  // Any measurement bellow this is considered a faulty sensor, broken or disconnected
+int sensorSafetyShorted = 1; // A reading of 1 means the sensor is shorted
 #endif
 
 // Flags to identify which plants need water
@@ -182,28 +182,79 @@ void loop() {
 }
 
 /*
- * Wait for an specified amount of time without blocking the CPU (as delay() do)
- */
+   Wait for an specified amount of time without blocking the CPU (as delay() do)
+*/
 unsigned long endOfWait = 0;
-void wait(unsigned long timeToWait){
-//  DPRINTLN("Wait called");
+void wait(unsigned long timeToWait) {
+  //  DPRINTLN("Wait called");
   endOfWait = millis() + timeToWait;
-  while(true){
+  while (true) {
     currentTime = millis();
-    if (currentTime >= endOfWait){
+    if (currentTime >= endOfWait) {
       break;
-    }    
+    }
   }
-//  DPRINTLN("end of wait");
+  //  DPRINTLN("end of wait");
 }
 
 
 void showStatus() {
+
+  showLastWatered();
+  wait(3000UL);
+
+  showNextRun();
+  wait(3000UL);
+
+  showUptime();
+  wait(3000UL);
+
+  showErrors();
+  wait(3000UL);
+
+  // if there is no error condition, turn display off for 5 minutes
+  if (hasError != "") {
+    lcd.noDisplay();
+    wait(5*60*1000); 
+    lcd.display();
+  }
+  
+
+}
+
+
+void showErrors(){
+  // Collect the errors for displaying
+  boolean somethingBroken = false;
+  for (byte i = 0; i < (sizeof(isBroken) / sizeof(isBroken[0])); i++)
+  {
+    if (isBroken[i] == true) {
+      if (hasError == "") {
+        hasError += "Error, these sensors gave an strange reading:";
+      }
+      hasError += " " + plant[i];
+      isBroken[i] = false;
+      somethingBroken = true;
+    }
+  }
+  if (hasError != "") {
+    lcdWrite(hasError);
+  }
+  if(!somethingBroken){
+    hasError = "";
+  }
+}
+
+
+void showLastWatered() {
   if (lastWatered != "") {
     lcdWrite(lastWatered);
     DPRINTLN(lastWatered);
-    wait(2000UL);
   }
+}
+
+
+void showNextRun() {
   unsigned int timeLeft = (sleepTime - (currentTime - previousTime)) / 1000 / 60;
   DPRINT("Minutes to next run: ");
   DPRINTLN(timeLeft);
@@ -211,32 +262,36 @@ void showStatus() {
   lcd.print("Next run: " );
   lcd.print(timeLeft);
   lcd.print("m");
-  wait(5000UL);
+}
 
+void showUptime() {
   // Time since last reset, in minutes
-  unsigned int uptime = currentTime / 1000 / 60;
-  DPRINT("Uptime: ");
-  DPRINTLN(uptime);
+  unsigned int uptimeMin = currentTime / 1000 / 60;
+  // in hours
+  unsigned int uptimeHr = uptimeMin / 60;
+  // in days
+  unsigned int uptimeDay = uptimeHr / 24;
+
+  DPRINT("Uptime Min: ");
+  DPRINTLN(uptimeMin);
+  DPRINT("Uptime Hr: ");
+  DPRINTLN(uptimeHr);
+  DPRINT("Uptime Day: ");
+  DPRINTLN(uptimeDay);
+
   lcd.clear();
-  lcd.print("Uptime: " );
-  lcd.print(uptime);
-  lcd.print("m");
-  wait(5000UL);
-
-
-  // Collect the errors for displaying
-  for (byte i = 0; i < (sizeof(isBroken) / sizeof(isBroken[0])); i++)
-  {
-    if (isBroken[i] == true) {
-      if (hasError == "") {
-        hasError += "Error, these sensors gave an strange reading:";
-      } 
-      hasError += " " + plant[i];
-      isBroken[i] = false;
-    }
-  }
-  if (hasError != "") {
-    lcdWrite(hasError);
+  if (uptimeMin < 1440) { // up to a day, show in minutes
+    lcd.print("Uptime: " );
+    lcd.print(uptimeMin);
+    lcd.print("m");
+  } else if (uptimeHr < 240) { // up to 10 days, show in hours
+    lcd.print("Uptime: " );
+    lcd.print(uptimeHr);
+    lcd.print("h");
+  } else {                 // show in days
+    lcd.print("Uptime: " );
+    lcd.print(uptimeDay);
+    lcd.print(" Days");
   }
 
 }
@@ -245,7 +300,8 @@ void showStatus() {
 /*
    Do the actual watering on the plants
 */
-void doWatering() {  
+void doWatering() {
+  lastWatered = "";
   for (byte i = 0; i < (sizeof(shouldWater) / sizeof(shouldWater[0])); i++)
   {
     if (shouldWater[i] == true) {
@@ -337,7 +393,7 @@ void lcdWrite(String text) {
             //            DPRINTLN("adding to lin ");
             lin += 1;
           } else {
-            //            DPRINTLN("rolling lin back to zero ");
+//            DPRINTLN("Cursor moved to line zero");
             lin = 0; // back to first line
           }
           //            DPRINT("lin variable ");
@@ -348,17 +404,17 @@ void lcdWrite(String text) {
           //              DPRINT("contents of lcdLines ");
           //              DPRINTLN(lcdLines[x]);
           //            }
-          //          DPRINT("Moving cursor to next line ");
+//          DPRINTLN("Moving cursor to next line ");
           //          DPRINTLN(lcdLines[lin]);
           lcd.setCursor(0, lcdLines[lin]);        // move cursor to next line
           DELAY(100);
         }
       } else { // we are at the last character of the page, print it a and move to next page
         lcd.print(buffer[i]);
-        //        DPRINTLN("Moving to next page");
+        DPRINTLN("Moving to next page");
         wait(2000UL);
         lcd.clear();
-        //        DPRINTLN("Cursor moved to line zero");
+//        DPRINTLN("Cursor moved to line zero");
         lin = 0;
         //        DPRINTLN("rolling lin back to zero ");
         DELAY(100);

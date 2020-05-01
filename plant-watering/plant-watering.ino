@@ -10,7 +10,7 @@
     Scaffolding for debug
 */
 
-#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank.
+//#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank and a bunch of variables are set with values adequate for debugging
 
 #ifdef DEBUG    //Macros are usually in all capital letters.
 #define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
@@ -213,7 +213,7 @@ void showStatus() {
   wait(3000UL);
 
   // if there is no error condition, turn display off for 5 minutes
-  if (hasError != "") {
+  if (hasError == "") {
     lcd.noDisplay();
     wait(5*60*1000); 
     lcd.display();

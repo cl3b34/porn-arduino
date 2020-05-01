@@ -12,15 +12,14 @@
 
 //#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank and a bunch of variables are set with values adequate for debugging
 
-#ifdef DEBUG    //Macros are usually in all capital letters.
-#define DPRINT(...)    Serial.print(__VA_ARGS__)     //DPRINT is a macro, debug print
-#define DPRINTLN(...)  Serial.println(__VA_ARGS__)
-#define DELAY(...)    delay(__VA_ARGS__)
-
+#ifdef DEBUG                                            //Macros are usually in all capital letters.
+  #define DPRINT(...)    Serial.print(__VA_ARGS__)      //DPRINT is a macro, debug print
+  #define DPRINTLN(...)  Serial.println(__VA_ARGS__)
+  #define DELAY(...)    delay(__VA_ARGS__)
 #else
-#define DPRINT(...)     //now defines a blank line
-#define DPRINTLN(...)
-#define DELAY(...)
+  #define DPRINT(...)     //now defines a blank line
+  #define DPRINTLN(...)
+  #define DELAY(...)
 #endif
 
 const int relayON = LOW;                  //  Our relay activates when it gets a LOW signal from arduino
@@ -31,15 +30,15 @@ const int waterLevelSensorPowerPin = 27;
 const int waterLevelSensorPin = A15;
 
 #ifdef DEBUG // Development rig
-const int samplesToTake = 5;
-const unsigned long timeBetweenSamples =  100;
-const int lcdRows = 4;
-const int lcdCols = 20;
+  const int samplesToTake = 5;
+  const unsigned long timeBetweenSamples =  100;
+  const int lcdRows = 4;
+  const int lcdCols = 20;
 #else
-const int samplesToTake = 30;             // Take a few sample measurements and average them for better precision
-const unsigned long timeBetweenSamples =  300;
-const int lcdRows = 2;
-const int lcdCols = 16;
+  const int samplesToTake = 30;             // Take a few sample measurements and average them for better precision
+  const unsigned long timeBetweenSamples =  300;
+  const int lcdRows = 2;
+  const int lcdCols = 16;
 #endif
 
 
@@ -59,27 +58,27 @@ int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24,
    plant that like it wet should hover close to 500, dry should remain close to 800
 */
 #ifdef DEBUG  // Development
-const unsigned long sleepTime = 120000;
-int startWatering[] = {100, 600, 600, 800, 100, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
-int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};               // water for just enough time so we can inspect ( UL = unsigned long )
-int sensorSafetyUpperLimit = 850;
-int sensorSafetyLowerLimit = 250;  // force at least one plant sensor to be 'defective'
-int sensorSafetyShorted = 1;
+  const unsigned long sleepTime = 120000;
+  int startWatering[] = {100, 600, 600, 800, 100, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
+  int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
+  unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};               // water for just enough time so we can inspect ( UL = unsigned long )
+  int sensorSafetyUpperLimit = 850;
+  int sensorSafetyLowerLimit = 250;  // force at least one plant sensor to be 'defective'
+  int sensorSafetyShorted = 1;
 #else
-const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4.000.000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
-int startWatering[] = {625, 600, 600, 800, 675, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-int stopWatering[] = {600, 575, 575, 775, 655, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
-int sensorSafetyUpperLimit = 850;  // Any measurement above this is considered a faulty sensor, broken or disconnected
-int sensorSafetyLowerLimit = 250;  // Any measurement bellow this is considered a faulty sensor, broken or disconnected
-int sensorSafetyShorted = 1;       // A reading of 1 means the sensor is shorted
+  const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4.000.000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
+  int startWatering[] = {625, 600, 600, 800, 675, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
+  int stopWatering[] = {600, 575, 575, 775, 655, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
+  unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
+  // Any measurement above or bellow those is considered a faulty sensor, broken or disconnected. A reading of 1 means the sensor is shorted
+  int sensorSafetyUpperLimit = 850;  
+  int sensorSafetyLowerLimit = 250;  
+  int sensorSafetyShorted = 1;
 #endif
 
-// Flags to identify which plants need water
-boolean shouldWater[15] = {false};
-// Fautly sensors
-boolean isBroken[15] = {false};
+boolean shouldWater[15] = {false};  // Flags to identify which plants need water
+boolean isBroken[15] = {false};     // Fautly sensors
+
 
 //LiquidCrystal lcd(rs,en,d4,d5,d6,d7);
 LiquidCrystal lcd(53, 52, 51, 50, 49, 48);  // put your pin numbers here
@@ -119,7 +118,6 @@ void setup() {
    - Could be a broken sensor
 
    TODO: Connect a PT100 sensor outside. only add the plants outside to the watering protocol if the temperature is above 5C
-
    TODO: Connect a water level sensor to the water reservoir
 
 */
@@ -171,15 +169,12 @@ void loop() {
     // water the plants
     doWatering();
 
-
     digitalWrite(pumpPowerPin, relayOFF);      // Turn the pump off before sleeping until next cycle
     previousTime = millis();                   // Save the time of the last run
-
   }
 
   // show the current watering status
   showStatus();
-
 }
 
 /*
@@ -200,7 +195,7 @@ void wait(unsigned long timeToWait) {
 
 
 void showStatus() {
-
+  
   showLastWatered();
   wait(3000UL);
 
@@ -219,8 +214,6 @@ void showStatus() {
     wait(5*60*1000); 
     lcd.display();
   }
-  
-
 }
 
 
@@ -266,12 +259,9 @@ void showNextRun() {
 }
 
 void showUptime() {
-  // Time since last reset, in minutes
-  unsigned int uptimeMin = currentTime / 1000 / 60;
-  // in hours
-  unsigned int uptimeHr = uptimeMin / 60;
-  // in days
-  unsigned int uptimeDay = uptimeHr / 24;
+  unsigned int uptimeMin = currentTime / 1000 / 60;    // Time since last reset, in minutes
+  unsigned int uptimeHr = uptimeMin / 60;              // in hours
+  unsigned int uptimeDay = uptimeHr / 24;              // in days
 
   DPRINT("Uptime Min: ");
   DPRINTLN(uptimeMin);
@@ -294,7 +284,6 @@ void showUptime() {
     lcd.print(uptimeDay);
     lcd.print(" Days");
   }
-
 }
 
 
@@ -321,7 +310,6 @@ void doWatering() {
       shouldWater[i] = false;
     }
   }
-
 }
 
 

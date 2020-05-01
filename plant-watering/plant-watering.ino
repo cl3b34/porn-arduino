@@ -24,7 +24,7 @@
 #endif
 
 const int relayON = LOW;                  //  Our relay activates when it gets a LOW signal from arduino
-const int relayOFF = HIGH;                //  Our relay activates when it gets a LOW signal from arduino
+const int relayOFF = HIGH;               
 const int pumpPowerPin = 2;
 const int moistureSensorsPowerPin = 26;    // all moisture sensors are powered from the same pin
 const int waterLevelSensorPowerPin = 27;
@@ -48,7 +48,8 @@ const int lcdCols = 16;
   The order is important since they match the moisture sensors and solenoids installed in the plant
 */
 String plant[] = {"Maracuja", "Limoeiro", "Tamarindeiro", "Espada de Sao Jorge", "Hortela de Fora", "", "", "", "", "", "", "", "", "", ""};
-int moistureSensorPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14};  // Analog Pins where the moisture sensors are connected
+// Moisture sensors (http://www.circuitstoday.com/arduino-soil-moisture-sensor) can be connected either to analog or digital pins, however digital pins are only 'wet/dry' not very useful...
+int moistureSensorPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14}; 
 int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24, 25};       // Digital pin providing power to the solenoids in the plant
 
 /*
@@ -61,7 +62,7 @@ int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24,
 const unsigned long sleepTime = 120000;
 int startWatering[] = {100, 600, 600, 800, 100, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
 int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // water for just enough time so we can inspect ( UL = unsigned long )
+unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};               // water for just enough time so we can inspect ( UL = unsigned long )
 int sensorSafetyUpperLimit = 850;
 int sensorSafetyLowerLimit = 250;  // force at least one plant sensor to be 'defective'
 int sensorSafetyShorted = 1;
@@ -69,10 +70,10 @@ int sensorSafetyShorted = 1;
 const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4.000.000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
 int startWatering[] = {625, 600, 600, 800, 675, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
 int stopWatering[] = {600, 575, 575, 775, 655, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                            // How long to water for ( ms )
+unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
 int sensorSafetyUpperLimit = 850;  // Any measurement above this is considered a faulty sensor, broken or disconnected
 int sensorSafetyLowerLimit = 250;  // Any measurement bellow this is considered a faulty sensor, broken or disconnected
-int sensorSafetyShorted = 1; // A reading of 1 means the sensor is shorted
+int sensorSafetyShorted = 1;       // A reading of 1 means the sensor is shorted
 #endif
 
 // Flags to identify which plants need water

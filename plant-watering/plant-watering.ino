@@ -11,7 +11,6 @@
 */
 
 //#define DEBUG   //If you comment this line, the DPRINT & DPRINTLN lines are defined as blank and a bunch of variables are set with values adequate for debugging
-
 #ifdef DEBUG                                            //Macros are usually in all capital letters.
   #define DPRINT(...)    Serial.print(__VA_ARGS__)      //DPRINT is a macro, debug print
   #define DPRINTLN(...)  Serial.println(__VA_ARGS__)
@@ -69,9 +68,9 @@ int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24,
   const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4.000.000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
   int startWatering[] = {625, 600, 600, 800, 675, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
   int stopWatering[] = {600, 575, 575, 775, 655, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-  unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
+  unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 120000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
   // Any measurement above or bellow those is considered a faulty sensor, broken or disconnected. A reading of 1 means the sensor is shorted
-  int sensorSafetyUpperLimit = 850;  
+  int sensorSafetyUpperLimit = 900;  
   int sensorSafetyLowerLimit = 250;  
   int sensorSafetyShorted = 1;
 #endif
@@ -211,7 +210,7 @@ void showStatus() {
   // if there is no error condition, turn display off for 5 minutes
   if (hasError == "") {
     lcd.noDisplay();
-    wait(5*60*1000); 
+    wait((5*60)*1000UL); 
     lcd.display();
   }
 }
@@ -386,8 +385,7 @@ void lcdWrite(String text) {
             lin = 0; // back to first line
           }
           //            DPRINT("lin variable ");
-          //            DPRINTLN(lin);
-          //            DPRINT("Moving to next line: ");
+          //            DPRINTLN(lin          //            DPRINT("Moving to next line: ");
           //            DPRINTLN(lcdLines[lin]);
           //            for(byte x=0; x<sizeof(lcdLines)/sizeof(lcdLines[0]); x++){
           //              DPRINT("contents of lcdLines ");

@@ -5,6 +5,8 @@
 */
 
 #include <LiquidCrystal.h>
+#include <Adafruit_MAX31865.h>
+
 
 /*
     Scaffolding for debug
@@ -60,7 +62,7 @@ int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24,
   const unsigned long sleepTime = 120000;
   int startWatering[] = {100, 600, 600, 800, 100, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
   int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-  unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 30000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};               // water for just enough time so we can inspect ( UL = unsigned long )
+  unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};               // water for just enough time so we can inspect ( UL = unsigned long )
   int sensorSafetyUpperLimit = 850;
   int sensorSafetyLowerLimit = 250;  // force at least one plant sensor to be 'defective'
   int sensorSafetyShorted = 1;
@@ -88,6 +90,16 @@ unsigned long currentTime = 0;      // track the current time
 unsigned long previousTime = 0;     // The last time we run
 
 
+// Temperature sensor PT100
+// Use software SPI: CS, DI, DO, CLK
+Adafruit_MAX31865 thermo = Adafruit_MAX31865(46, 45, 44, 43);
+// The value of the Rref resistor. Use 430.0 for PT100 and 4300.0 for PT1000
+#define RREF      430.0
+// The 'nominal' 0-degrees-C resistance of the sensor
+// 100.0 for PT100, 1000.0 for PT1000
+#define RNOMINAL  100.0
+
+double currentTemp = 0;  // The current temperature measured
 
 // Sets the digital channels to output and make sure the relays are all OFF
 void setup() {
@@ -109,6 +121,9 @@ void setup() {
   digitalWrite(pumpPowerPin, relayOFF);                // Pump Off
   pinMode(waterLevelSensorPowerPin, OUTPUT);
   digitalWrite(waterLevelSensorPowerPin, LOW);    // water level sensor OFF
+
+  Serial.println("Initialize PT100 sensor");
+  thermo.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
 }
 
 /*
@@ -117,7 +132,6 @@ void setup() {
    - Could be a broken sensor
 
    TODO: Connect a PT100 sensor outside. only add the plants outside to the watering protocol if the temperature is above 5C
-   TODO: Connect a water level sensor to the water reservoir
 
 */
 void loop() {
@@ -172,9 +186,55 @@ void loop() {
     previousTime = millis();                   // Save the time of the last run
   }
 
-  // show the current watering status
+  // check the current temperature
+  currentTemp = checkTemp();
+
+  // show the current status
   showStatus();
 }
+
+
+long checkTemp(){
+  uint16_t rtd = thermo.readRTD();
+
+//  Serial.print("RTD value: "); Serial.println(rtd);
+  float ratio = rtd;
+  ratio /= 32768;
+//  Serial.print("Ratio = "); Serial.println(ratio,8);
+//  Serial.print("Resistance = "); Serial.println(RREF*ratio,8);
+  Serial.print("Temperature = "); Serial.println(thermo.temperature(RNOMINAL, RREF));
+
+  // Check and print any faults
+//  uint8_t fault = thermo.readFault();
+//  if (fault) {
+//    Serial.print("Fault 0x"); Serial.println(fault, HEX);
+//    if (fault & MAX31865_FAULT_HIGHTHRESH) {
+//      Serial.println("RTD High Threshold"); 
+//    }
+//    if (fault & MAX31865_FAULT_LOWTHRESH) {
+//      Serial.println("RTD Low Threshold"); 
+//    }
+//    if (fault & MAX31865_FAULT_REFINLOW) {
+//      Serial.println("REFIN- > 0.85 x Bias"); 
+//    }
+//    if (fault & MAX31865_FAULT_REFINHIGH) {
+//      Serial.println("REFIN- < 0.85 x Bias - FORCE- open"); 
+//    }
+//    if (fault & MAX31865_FAULT_RTDINLOW) {
+//      Serial.println("RTDIN- < 0.85 x Bias - FORCE- open"); 
+//    }
+//    if (fault & MAX31865_FAULT_OVUV) {
+//      Serial.println("Under/Over voltage"); 
+//    }
+//    thermo.clearFault();
+//  }
+//  Serial.println();
+//  delay(1000);
+
+return thermo.temperature(RNOMINAL, RREF);
+}
+
+
 
 /*
    Wait for an specified amount of time without blocking the CPU (as delay() do)
@@ -198,6 +258,9 @@ void showStatus() {
   showLastWatered();
   wait(3000UL);
 
+  showTemp();
+  wait(3000UL);
+
   showNextRun();
   wait(3000UL);
 
@@ -207,12 +270,6 @@ void showStatus() {
   showErrors();
   wait(3000UL);
 
-  // if there is no error condition, turn display off for 5 minutes
-  if (hasError == "") {
-    lcd.noDisplay();
-    wait((5*60)*1000UL); 
-    lcd.display();
-  }
 }
 
 
@@ -245,6 +302,18 @@ void showLastWatered() {
     DPRINTLN(lastWatered);
   }
 }
+
+
+void showTemp() {
+    char temp[16];
+    dtostrf(currentTemp,3,2,temp);
+    char buff[50];
+    strcpy(buff,"Temperature: ");
+    strcat(buff,temp);
+    lcdWrite(buff);
+    DPRINTLN(buff);
+}
+
 
 
 void showNextRun() {

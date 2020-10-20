@@ -44,10 +44,10 @@ const int waterLevelSensorPin = A15;
 
 
 /*
-  The plant we are caring for, If the plant doesn't have a name, we will not look after her, so give her a name!
+  The plant we are caring for, If the plant doesn't have a name, we will not look after her, so give her a name
   The order is important since they match the moisture sensors and solenoids installed in the plant
 */
-String plant[] = {"Maracuja", "Limoeiro", "Tamarindeiro", "Espada de Sao Jorge", "Hortela de Fora", "", "", "", "", "", "", "", "", "", ""};
+String plant[] = {"Maracuja", "Limoeiro", "Tamarindeiro", "Espada de Sao Jorge", "Hortela de Fora","Manjericao","Abacaxi Pequeno", "Alecrim", "Abacaxi Grande", "", "", "", "", "", ""};
 // Moisture sensors (http://www.circuitstoday.com/arduino-soil-moisture-sensor) can be connected either to analog or digital pins, however digital pins are only 'wet/dry' not very useful...
 int moistureSensorPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14}; 
 int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24, 25};       // Digital pin providing power to the solenoids in the plant
@@ -68,9 +68,9 @@ int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24,
   int sensorSafetyShorted = 1;
 #else
   const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4.000.000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
-  int startWatering[] = {625, 600, 600, 800, 675, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-  int stopWatering[] = {600, 575, 575, 775, 655, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
-  unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 120000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
+  int startWatering[] = {625, 600, 600, 800, 675, 600, 600, 600, 600, 1200, 1200, 1200, 1200, 1200, 1200};
+  int stopWatering[] = {600, 575, 575, 775, 655, 575, 575, 575, 575, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
+  unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 120000, 10000, 10000, 10000, 10000, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
   // Any measurement above or bellow those is considered a faulty sensor, broken or disconnected. A reading of 1 means the sensor is shorted
   int sensorSafetyUpperLimit = 900;  
   int sensorSafetyLowerLimit = 250;  

@@ -4,8 +4,16 @@
   This is build for a 16 relay board and an Arduino Mega driving it. Since we dedicate one of the relays to the Pump we can take care of 15 plant maximum
 */
 
+
+// Alternative to strings:
+// https://cpp4arduino.com/2020/02/07/how-to-format-strings-without-the-string-class.html
+
+
+
 #include <LiquidCrystal.h>
 #include <Adafruit_MAX31865.h>
+
+
 
 
 /*
@@ -48,6 +56,7 @@ const int waterLevelSensorPin = A15;
   The order is important since they match the moisture sensors and solenoids installed in the plant
 */
 String plant[] = {"Maracuja", "Limoeiro", "Tamarindeiro", "Espada de Sao Jorge", "Hortela de Fora","Manjericao","Abacaxi Pequeno", "Alecrim", "Abacaxi Grande", "", "", "", "", "", ""};
+boolean indoor[] = {true, true, true, true, false, true, true, true, true, true, true, true, true, true, true};
 // Moisture sensors (http://www.circuitstoday.com/arduino-soil-moisture-sensor) can be connected either to analog or digital pins, however digital pins are only 'wet/dry' not very useful...
 int moistureSensorPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14}; 
 int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24, 25};       // Digital pin providing power to the solenoids in the plant
@@ -57,19 +66,23 @@ int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24,
    A value of 1023 is a dry sensor, 1200 is out of the range of the sensor so we use that for empty slots.
    When defining a new plant, put a proper value here.
    plant that like it wet should hover close to 500, dry should remain close to 800
+
+  MANJERICAO - Has a different type of sensor with a different range, apparently not very good. Around 500 is on water and around 760 is on air. So a half way would be 630 but on very dry dirty
+  it still shows around 570
+   
 */
 #ifdef DEBUG  // Development
   const unsigned long sleepTime = 120000;
-  int startWatering[] = {100, 600, 600, 800, 100, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
-  int stopWatering[] = {600, 575, 575, 775, 575, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200};
-  unsigned long wateringTime[] = {3000, 8000, 15000, 30000, 3000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};               // water for just enough time so we can inspect ( UL = unsigned long )
+  int startWatering[] = {100, 600, 600, 800, 675, 530, 600, 600, 600, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
+  int stopWatering[] = {600, 575, 575, 775, 655, 525, 575, 575, 575, 1200, 1200, 1200, 1200, 1200, 1200};
+  unsigned long wateringTime[] = {3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 0, 0, 0, 0, 0, 0};               // water for just enough time so we can inspect ( UL = unsigned long ) 
   int sensorSafetyUpperLimit = 850;
   int sensorSafetyLowerLimit = 250;  // force at least one plant sensor to be 'defective'
   int sensorSafetyShorted = 1;
 #else
   const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4.000.000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
-  int startWatering[] = {625, 600, 600, 800, 675, 600, 600, 600, 600, 1200, 1200, 1200, 1200, 1200, 1200};
-  int stopWatering[] = {600, 575, 575, 775, 655, 575, 575, 575, 575, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
+  int startWatering[] = {625, 600, 600, 800, 675, 530, 600, 600, 600, 1200, 1200, 1200, 1200, 1200, 1200};      
+  int stopWatering[] = {600, 575, 575, 775, 655, 525, 575, 575, 575, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
   unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 120000, 10000, 10000, 10000, 10000, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
   // Any measurement above or bellow those is considered a faulty sensor, broken or disconnected. A reading of 1 means the sensor is shorted
   int sensorSafetyUpperLimit = 900;  
@@ -99,7 +112,7 @@ Adafruit_MAX31865 thermo = Adafruit_MAX31865(46, 45, 44, 43);
 // 100.0 for PT100, 1000.0 for PT1000
 #define RNOMINAL  100.0
 
-double currentTemp = 0;  // The current temperature measured
+int currentTemp = 0;  // The current temperature measured
 
 // Sets the digital channels to output and make sure the relays are all OFF
 void setup() {
@@ -160,14 +173,16 @@ void loop() {
           DPRINTLN("Sensor on " + plant[i] +  " gave a reading out of range (" + moistureAveraged + "), please check if it is broken");
         }
 
-        if (moistureAveraged > startWatering[i] && ! isBroken[i]) {
-          DPRINTLN("Moisture is low in " + plant[i] + " needs watering");
-          // Set a flag for this plant, we will water all at the same time later
-          shouldWater[i] = true;
-        } else if (moistureAveraged < stopWatering[i]) {
-          DPRINTLN("Moisture is high in " + plant[i] + " do NOT need watering");
-          // remove the flag
-          shouldWater[i] = false;
+        if(checkSafeTemperature(i)){
+          if (moistureAveraged > startWatering[i] && ! isBroken[i]) {
+            DPRINTLN("Moisture is low in " + plant[i] + " needs watering");
+            // Set a flag for this plant, we will water all at the same time later
+            shouldWater[i] = true;
+          } else if (moistureAveraged < stopWatering[i]) {
+            DPRINTLN("Moisture is high in " + plant[i] + " do NOT need watering");
+            // remove the flag
+            shouldWater[i] = false;
+          }
         }
       } else {
         DPRINT("No plant installed on sensor ");
@@ -194,7 +209,23 @@ void loop() {
 }
 
 
-long checkTemp(){
+boolean checkSafeTemperature(int plantNum){
+  Serial.print("Checking Safe Temp for Plant "); Serial.println(plant[plantNum]);
+  char p[500];
+  if (checkTemp() < 5.0 && indoor[plantNum] == false){
+    snprintf(p, sizeof(p), "Plant %s is outside and temperature is less than 5C, not Watering", plant[plantNum].c_str());
+    Serial.println(p);
+    lcd.print(p);
+    return false;
+  }else{
+//    snprintf(p, sizeof(p), "Plant %s is safe to water", plant[plantNum].c_str());
+//    Serial.println(p);
+    return true;
+  }
+}
+
+
+float checkTemp(){
   uint16_t rtd = thermo.readRTD();
 
 //  Serial.print("RTD value: "); Serial.println(rtd);
@@ -231,7 +262,11 @@ long checkTemp(){
 //  Serial.println();
 //  delay(1000);
 
-return thermo.temperature(RNOMINAL, RREF);
+
+float temp = thermo.temperature(RNOMINAL, RREF);
+Serial.print("Temp as float "); Serial.println(temp);
+
+return temp;
 }
 
 
@@ -305,13 +340,30 @@ void showLastWatered() {
 
 
 void showTemp() {
-    char temp[16];
-    dtostrf(currentTemp,3,2,temp);
-    char buff[50];
-    strcpy(buff,"Temperature: ");
-    strcat(buff,temp);
-    lcdWrite(buff);
-    DPRINTLN(buff);
+    char temp[32];
+//    Serial.println(currentTemp);
+    int t = round_temp(currentTemp);
+    snprintf(temp, sizeof(temp), "Temperature: %i C", t);
+    Serial.println(temp);
+    lcdWrite(temp);
+    DPRINTLN(temp);
+}
+
+
+// Round the temperature up or down for display
+int round_temp(float temp){
+  // Round the temperature since %f doesn't work on arduino 8bits
+  int t = 0;
+  if (temp >= 0.0) {
+    Serial.print("Rounding up to ");
+    t = (int)(temp + 1);
+  }else{
+    Serial.println("Rounding down to ");
+    t = (int)(temp - 1);
+  }
+    Serial.println(t);
+//  Serial.print("Temperature rounded: "); Serial.println(t);
+  return t;
 }
 
 
@@ -413,8 +465,8 @@ void lcdWrite(String text) {
     }
   }
 
-  DPRINT("Text size to print ");
-  DPRINTLN(text.length());
+//  DPRINT("Text size to print ");
+//  DPRINTLN(text.length());
 
   lcd.clear();
   if (text.length() > lcdCols) {
@@ -467,7 +519,7 @@ void lcdWrite(String text) {
         }
       } else { // we are at the last character of the page, print it a and move to next page
         lcd.print(buffer[i]);
-        DPRINTLN("Moving to next page");
+//        DPRINTLN("Moving to next page");
         wait(2000UL);
         lcd.clear();
 //        DPRINTLN("Cursor moved to line zero");

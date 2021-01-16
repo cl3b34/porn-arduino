@@ -73,16 +73,16 @@ int solenoidPowerPin[] = {3, 4, 5 , 6 , 7 , 8 , 9 , 10 , 11, 12, 13, 22, 23, 24,
 */
 #ifdef DEBUG  // Development
   const unsigned long sleepTime = 120000;
-  int startWatering[] = {100, 600, 600, 800, 675, 530, 600, 600, 600, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
-  int stopWatering[] = {600, 575, 575, 775, 655, 525, 575, 575, 575, 1200, 1200, 1200, 1200, 1200, 1200};
+  int startWatering[] = {100, 600, 600, 800, 675, 525, 600, 600, 600, 1200, 1200, 1200, 1200, 1200, 1200};  // first plant always is watering
+  int stopWatering[] = {600, 575, 575, 775, 655, 520, 575, 575, 575, 1200, 1200, 1200, 1200, 1200, 1200};
   unsigned long wateringTime[] = {3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 0, 0, 0, 0, 0, 0};               // water for just enough time so we can inspect ( UL = unsigned long ) 
   int sensorSafetyUpperLimit = 850;
   int sensorSafetyLowerLimit = 250;  // force at least one plant sensor to be 'defective'
   int sensorSafetyShorted = 1;
 #else
   const unsigned long sleepTime = 8000000;            // Time between runs to check if plant need water. 4.000.000 = 66 minutes. 8.000.000 = 133 minutes (time is in miliseconds)
-  int startWatering[] = {625, 600, 600, 800, 675, 530, 600, 600, 600, 1200, 1200, 1200, 1200, 1200, 1200};      
-  int stopWatering[] = {600, 575, 575, 775, 655, 525, 575, 575, 575, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
+  int startWatering[] = {625, 600, 600, 800, 675, 525, 600, 600, 600, 1200, 1200, 1200, 1200, 1200, 1200};      
+  int stopWatering[] = {600, 575, 575, 775, 655, 520, 575, 575, 575, 1200, 1200, 1200, 1200, 1200, 1200};       // When to stop watering. Be conservative, it is easy to get it too wet before the sensor measurement changes (water takes time to soak in)
   unsigned long wateringTime[] = {15000, 8000, 15000, 30000, 120000, 10000, 10000, 10000, 10000, 0, 0, 0, 0, 0, 0};                  // How long to water for ( ms )
   // Any measurement above or bellow those is considered a faulty sensor, broken or disconnected. A reading of 1 means the sensor is shorted
   int sensorSafetyUpperLimit = 900;  
@@ -190,6 +190,7 @@ void loop() {
         DPRINTLN(" . Skipping.");
         shouldWater[i] = false;
       }
+      Serial.println();
     }
 
     digitalWrite(moistureSensorsPowerPin, LOW);          // Don't need the sensors anymore, turn them OFF
@@ -235,7 +236,7 @@ float checkTemp(){
 //  Serial.print("Resistance = "); Serial.println(RREF*ratio,8);
   Serial.print("Temperature = "); Serial.println(thermo.temperature(RNOMINAL, RREF));
 
-  // Check and print any faults
+ //  Check and print any faults
 //  uint8_t fault = thermo.readFault();
 //  if (fault) {
 //    Serial.print("Fault 0x"); Serial.println(fault, HEX);
@@ -264,7 +265,7 @@ float checkTemp(){
 
 
 float temp = thermo.temperature(RNOMINAL, RREF);
-Serial.print("Temp as float "); Serial.println(temp);
+//Serial.print("Temp as float "); Serial.println(temp);
 
 return temp;
 }
